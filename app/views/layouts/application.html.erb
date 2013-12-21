@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>PmTool</title>
-  <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
-  <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
-
-<%= yield %>
-
-</body>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= content_for?(:title) ? yield(:title) : "Pm Tool" %></title>
+    <meta name="description" content="<%= content_for?(:description) ? yield(:description) : "Pm Tool" %>">
+    <%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" => true %>
+    <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body>
+    <header>
+      <div class="page-header"><h1>PM Tool</h1></div>
+    </header>
+    <main role="main">
+      <div class="row">
+        <div class="col-md-2">
+          <ul class="nav nav-pills nav-stacked">
+            <% @projects.each do |project| %>
+              <%= nav_link project.name, project %>
+            <% end %>
+            <br/>
+            <%= link_to 'New Project', new_project_path, :role => 'button', :class => 'btn btn-default' %>
+          </ul>
+        </div>
+        <div class="col-md-10">
+             <%= render 'layouts/messages' %>
+             <%= yield %>
+        </div>
+      </div>
+    </main>
+  </body>
 </html>
