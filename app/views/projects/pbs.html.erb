@@ -1,0 +1,48 @@
+<%= render 'nav' %>
+
+<table class="table table-bordered table-hover">
+	<thead>
+		<tr>
+			<th>Produkt</th>
+			<th>Teilprodukt</th>
+			<th>Modul</th>
+			<th>Komponente</th>
+			<th>Aktionen</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td colspan="4"><%= @project.name %></td>
+			<td>
+				<%= render 'actions', :pbs => nil %>
+			</td>
+		</tr>
+		<!-- Schleife durch Teilprodukte  -->
+		<% @project.pbs.each do |pbs_depth0| %>
+			<tr>
+				<td align="right"><%= pbs_depth0.order %></td>
+				<td colspan="3"><%= pbs_depth0.name %></td>
+				<td><%= render 'actions', :pbs => pbs_depth0 %></td>
+			</tr>
+
+			<!-- Schleife durch Module  -->
+			<% pbs_depth0.childs.each do |pbs_depth1| %>
+				<tr>
+					<td colspan="2" align="right"><%= "#{pbs_depth0.order}.#{pbs_depth1.order}" %></td>
+					<td colspan="2"><%= pbs_depth1.name %></td>
+					<td><%= render 'actions', :pbs => pbs_depth1 %></td>
+				</tr>
+
+				<!-- Schleife durch Komponenten  -->
+				<% pbs_depth1.childs.each do |pbs_depth2| %>
+					<tr>
+						<td colspan="3" align="right"><%= "#{pbs_depth0.order}.#{pbs_depth1.order}.#{pbs_depth2.order}" %></td>
+						<td><%= pbs_depth2.name %></td>
+						<td><%= render 'actions', :pbs => pbs_depth2 %></td>
+					</tr>
+
+				<% end %>
+			<% end %>
+		<% end %>
+	</tbody>
+</table>

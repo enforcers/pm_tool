@@ -1,6 +1,8 @@
 PmTool::Application.routes.draw do
   get 'main/index'
+  
   resources :projects
+  get 'projects/:id/pbs' => 'projects#pbs', as: :project_pbs
 
   root 'main#index'
 
