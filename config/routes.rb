@@ -1,10 +1,10 @@
 PmTool::Application.routes.draw do
-  get 'main/index'
-  
-  resources :projects
-  get 'projects/:id/pbs' => 'projects#pbs', as: :project_pbs
 
-  root 'main#index'
+  root 'welcome#index'
+
+  resources :projects do
+    resources :products
+  end
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
@@ -46,7 +46,7 @@ PmTool::Application.routes.draw do
   #       get 'recent', on: :collection
   #     end
   #   end
-  
+
   # Example resource route with concerns:
   #   concern :toggleable do
   #     post 'toggle'

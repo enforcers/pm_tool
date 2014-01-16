@@ -11,19 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131221122625) do
+ActiveRecord::Schema.define(version: 20140116155445) do
 
-  create_table "pbs", force: true do |t|
+  create_table "products", force: true do |t|
     t.string   "name"
+    t.integer  "depth"
+    t.integer  "place"
     t.integer  "project_id"
     t.integer  "parent_id"
-    t.integer  "depth"
-    t.integer  "order"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "pbs", ["parent_id"], name: "index_pbs_on_parent_id"
+  add_index "products", ["parent_id"], name: "index_products_on_parent_id"
+  add_index "products", ["project_id"], name: "index_products_on_project_id"
 
   create_table "projects", force: true do |t|
     t.string   "name"

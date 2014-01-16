@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-PmTool::Application.config.secret_key_base = '68b4b37a6bfde7475fccc692af16359c37cd22f5e74ede5f2f65b33c866f123550cc66608b9c007b2134fc6b6706bc2dd2deb772710cb90a8118f2d7278cf203'
+PmTool::Application.config.secret_key_base = '393c0799460dabf34e8ce6f4b8723548a1070bc91844b93d6cf3e03d910909b4e08d998863f7f90afefd3034473db5a866f738ac1255a449b8d4625da90128b8'
