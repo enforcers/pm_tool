@@ -1,0 +1,152 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Roadmap <small>Timeline <input type="checkbox" id="show-timeline-switch" checked/></small></h1>
+<div id="timeline-container"><div id="timeline-embed"></div></div>
+<div class="panel panel-primary">
+  <div class="panel-heading">New Milestone</div>
+  <div class="panel-body">
+    <%= form_for :milestone, :url => milestone_path, :html => { :class => 'form-horizontal', :id => 'new-milestone-form' } do |f| %>
+      <%= f.hidden_field :project_id, :value => @project.id %>
+      <div class="form-group">
+        <%= f.label :name, :class => 'col-sm-3 control-label' %>
+        <div class="col-sm-9">
+          <%= f.text_field :name, :class => 'form-control', :placeholder => 'Milestone name' %>
+        </div>
+      </div>
+      <div class="form-group">
+        <%= f.label :description, :class => 'col-sm-3 control-label' %>
+        <div class="col-sm-9">
+          <%= f.text_area :description, :class => 'form-control', :placeholder => 'Description', :rows => '5' %>
+        </div>
+      </div>
+      <div class="form-group">
+        <%= f.label :date, :class => 'col-sm-3 control-label' %>
+        <div class="col-sm-9">
+          <div class="input-daterange input-group" id="datepicker">
+            <%= f.text_field :start_at, :class => 'form-control' %>
+            <span class="input-group-addon">to</span>
+            <%= f.text_field :end_at, :class => 'form-control' %>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-9">
+          <%= f.submit 'Save Milestone', :class => 'btn btn-primary' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Milestone</th>
+        <th colspan="2">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @milestones.each do |milestone| %>
+        <tr>
+          <td><%= milestone.name %><p class="text-muted"><%= formatted_date_range(milestone.start_at, milestone.end_at) %></p></td>
+          <td><%= milestone.description.html_safe %></td>
+          <td class="text-right"><%= link_to content_tag(:span, nil, :class => 'glyphicon glyphicon-trash'), milestone_delete_path(milestone), :class => 'btn btn-default btn-xs delete-milestone' %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<script type="text/javascript" src="/assets/timelineJS/js/storyjs-embed.js"></script>
+<script type="text/javascript" src="/assets/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/assets/bootstrap-switch.min.js"></script>
+<script>
+
+  $('#show-timeline-switch').bootstrapSwitch().on('switch-change', function(e, data) {
+    var show = data.value
+
+    if (show) {
+      $('#timeline-container').show(400)
+    } else {
+      $('#timeline-container').hide(400)
+    }
+  })
+
+  $('#datepicker').datepicker({todayBtn: 'linked', format: "yyyy/mm/dd"});
+
+  var buildTimeline = function(data, start_at_slide) {
+    $('#timeline-embed').html('');
+    $('#timeline-embed').show(400);
+    createStoryJS({
+      type:   'timeline',
+      width:    '100%',
+      height:   '400',
+      source:   data,
+      embed_id: 'timeline-embed',
+      start_at_slide: start_at_slide
+    });
+  }
+
+  var initTimeline = function() {
+    $.ajax({
+      type : 'GET',
+      url : '<%= project_roadmap_path(@project, :format => :json) %>',
+      dataType: 'json',
+      success: function(data) {
+        buildTimeline(data.data, data.start_at_slide);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  }
+
+  $('#new-milestone-form').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var tbody = $(this).parent().next().find('tbody');
+
+    var clearForm = function() {
+      form.find('.form-control').val('');
+      form.find('[name="milestone[name]"]').focus();
+    }
+
+    $.ajax({
+      type : form.attr('method'),
+      url : form.attr('action'),
+      dataType: 'json',
+      data : form.serialize(),
+      success : function(data) {
+        initTimeline();
+        var date_range = data.start_at;
+        if (data.end_at != null) {
+          date_range = date_range + ' to ' + data.end_at;
+        }
+        var row = '<tr><td>' + data.name + '<p class="text-muted">' + date_range + '</p></td><td>' + data.description + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-milestone" href="/milestone/' + data.id + '/delete"><span class="glyphicon glyphicon-trash"</span></a></td></tr>';
+        tbody.append(row);
+        tbody.children('tr:last').show(400);
+        clearForm();
+      }
+    })
+  })
+
+  $(document).on('click', '.delete-milestone', function(e) {
+    e.preventDefault();
+
+    var row = $(this).closest('tr');
+
+    $.ajax({
+      type : 'DELETE',
+      url : $(this).attr('href'),
+      dataType: 'json',
+      success : function(data) {
+        row.hide(400, function() { $(this).remove() })
+        initTimeline();
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    })
+
+  })
+
+  initTimeline();
+
+</script>

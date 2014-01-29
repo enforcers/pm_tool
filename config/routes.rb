@@ -2,9 +2,57 @@ PmTool::Application.routes.draw do
 
   root 'welcome#index'
 
-  resources :projects do
-    resources :products
+  resources :projects, :only => [:create, :destroy], :shallow => true do
+    resources :products, :only => [:index]
+    resources :works, :only => [:index]
+    resources :resources, :only => [:index]
+    resources :resource_allocations, :only => [:index]
+    resources :efforts, :only => [:index]
   end
+
+  # For ajax calls
+  controller :products do
+    post 'product', :to => :create
+    patch 'product', :to => :move
+    put 'product', :to => :update
+    delete 'product', :to => :destroy
+  end
+
+  controller :works do
+    post 'work', :to => :create
+    patch 'work', :to => :move
+    put 'work', :to => :update
+    delete 'work', :to => :destroy
+    get 'work/output', :to => :output
+  end
+
+  controller :resources do
+    post 'resource', :to => :create
+    patch 'resource', :to => :move
+    put 'resource', :to => :update
+    delete 'resource', :to => :destroy
+    get 'resource', :to => :get
+  end
+
+  controller :resource_allocations do
+    get 'resource_allocations', :to => :get
+    get 'resource_allocations_select', :to => :select
+    post 'resource_allocations', :to => :update
+  end
+
+  controller :efforts do
+    delete 'efforts/:id/delete', :to => :destroy, :as => 'effort'
+    post 'efforts', :to => :create
+    get 'projects/:project_id/efforts/results', :to => :results, :as => 'efforts_results'
+  end
+
+  controller :milestones do
+    get 'projects/:project_id/roadmap', :to => :index, :as => 'project_roadmap'
+    post 'milestone', :to => :create
+    delete 'milestone/:id/delete', :to => :destroy, :as => 'milestone_delete'
+  end
+
+
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

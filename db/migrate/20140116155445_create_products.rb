@@ -2,10 +2,9 @@ class CreateProducts < ActiveRecord::Migration
   def change
     create_table :products do |t|
       t.string :name
-      t.integer :depth
-      t.integer :place
+      t.integer :position
       t.references :project, index: true
-      t.references :parent, index: true
+      t.integer :parent_id
 
       t.timestamps
     end

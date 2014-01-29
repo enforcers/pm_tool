@@ -1,0 +1,87 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Resource Allocation Matrix</h1>
+<nav class="navbar navbar-default" role="navigation">
+  <div class="collapse navbar-collapse">
+      <div class="btn-xs btn-block">
+        <div class="input-group">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-list"></span></span>
+          <select multiple id="resource_allocation" class="form-control chosen-select" data-placeholder="Allocate resources...">
+            <optgroup label="Internal">
+              <%= options_from_collection_for_select @project.resources.internal, 'id', 'name' %>
+            </optgroup>
+            <optgroup label="External">
+              <%= options_from_collection_for_select @project.resources.external, 'id', 'name' %>
+            </optgroup>
+          </select>
+          <span class="input-group-btn">
+            <button type="button" class="btn btn-primary" style="height: 42px"><span class="glyphicon glyphicon-save"></span> Save</button>
+          </span>
+        </div>
+      </div>
+  </div>
+</nav>
+
+<div id="jstree"></div>
+<script>
+  var tree = $('#jstree');
+  $('#jstree')
+    .jstree({
+      "core" : {
+        "check_callback" : true,
+        "data" : {
+          "url" : "<%= project_works_path(@project, :format => :json) %>",
+          "data" : function(node) {
+            return { 'id' : node.id, 'text' : 'test' };
+          }
+        },
+      },
+      "types" : {
+        '#'  : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : [] },
+        'd1' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d2'] },
+        'd2' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d3'] },
+        'd3' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d4'] },
+        'd4' : { "icon" : "glyphicon glyphicon-tasks", "max_children" : 0, "valid_children" : [] }
+      },
+      "plugins" : [ "dnd", "types", "wholerow" ]
+  }).bind('ready.jstree', function() {
+    $(this).jstree('open_all').jstree('open_all').jstree('open_all');
+  }).bind('select_node.jstree', function(event, data) {
+    if (data.node.type == 'd4') {
+      var work = {
+        'id' : data.node.id
+      }
+
+      $.ajax({
+        type : 'GET',
+        url : '<%= resource_allocations_path %>',
+        dataType: 'json',
+        data : { 'project' : <%= @project.id %>, 'work' : work },
+        success: function(data) {
+          console.log(data);
+          $('#resource_allocation').val(data).removeAttr('disabled');
+        },
+        error: function(xhRequest, ErrorText, thrownError) {
+          console.log(xhRequest.responseText);
+        }
+      });
+    } else {
+      $('#resource_allocation').val('').attr('disabled', 'disabled');
+    }
+  });;
+
+  function AjaxProduct(action, product, callback) {
+    $.ajax({
+      type : action,
+      url : '<%= product_path %>',
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'product' : product },
+      success: callback,
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  }
+
+  $('#resource_allocation').chosen();
+
+</script>

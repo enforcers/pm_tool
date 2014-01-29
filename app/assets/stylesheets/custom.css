@@ -15,6 +15,12 @@ header .container {
 	margin-right: auto;
 }
 
+header .logo {
+	margin-top: 21px;
+	margin-bottom: 0px;
+	
+}
+
 header h1 {
 	color: #fff;
 }
@@ -25,4 +31,80 @@ main {
 	padding-right: 15px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.breadcrumb.project-nav > li + li:before {
+	content: "\25b6\00a0";
+}
+
+.text-justify {
+	text-align: justify !important;
+}
+
+#jstree_output {
+	height: 300px;
+	overflow-y: scroll;
+}
+
+.resource-form {
+	background-color: #e7e7e7;
+	border-radius: 0;
+	border: 1px solid #dadada;
+	padding: 15px;
+	margin-top: -1px;
+	display: none;
+}
+
+.table-draggable tbody > tr:hover > td {
+	cursor: move;
+}
+
+.resource-allocation-table tr.depth-0, .resource-allocation-table tr.depth-1, .resource-allocation-table tr.depth-2 {
+	color: gray;
+}
+
+.resource-allocation-table tr.depth-1 td:first-child {
+	padding-left: 30px;
+}
+
+.resource-allocation-table tr.depth-2 td:first-child {
+	padding-left: 60px;
+}
+
+.resource-allocation-table .work {
+	padding-left: 90px;
+}
+
+.resource-allocation-table .resources {
+	width: 40%;
+}
+
+.resource-allocation-select {
+
+}
+
+.popover {
+	max-width: 600px;
+	width: 600px;
+	height: 64px;
+}
+
+#accordion .panel-collapse .panel-body {
+/*	max-height: 400px;
+	overflow: auto;*/
+}
+
+.work-panel .input-group-addon {
+	min-width: 100px;
+	text-align: left;
+}
+
+#timeline-embed {
+	width: 100%;
+	height: 400px;
+	margin-bottom: 20px !important;
+}
+
+.datepicker {
+	z-index: 100 !important;
 }

@@ -1,0 +1,54 @@
+body {
+	margin: 0;
+}
+
+header {
+	background-color: #222;
+	margin-bottom: 15px;
+}
+
+header .container {
+	width: 1170px;
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+header h1 {
+	color: #fff;
+}
+
+main {
+	width: 1170px;
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.breadcrumb.project-nav > li + li:before {
+	content: "\25b6\00a0";
+}
+
+.text-justify {
+	text-align: justify !important;
+}
+
+#jstree_output {
+	height: 300px;
+	overflow-y: scroll;
+}
+
+.resource-form {
+	background-color: #e7e7e7;
+	border-radius: 0;
+	border: 1px solid #dadada;
+	padding: 15px;
+	margin-top: -1px;
+	display: none;
+}
+
+.table-draggable tbody > tr:hover > td {
+	cursor: move;
+}

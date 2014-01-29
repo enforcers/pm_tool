@@ -1,0 +1,151 @@
+<div id="progressbar" class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="33.33" aria-valuemin="0" aria-valuemax="100" style="width: 33.33%"></div>
+</div>
+
+<div class="panel-group" id="accordion">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#step-1"><strong>#1</strong> Hand out estimation forms</a>
+      </h4>
+    </div>
+    <div id="step-1" class="panel-collapse collapse in">
+      <div class="panel-body">
+        <p class="text-muted">Pass following downloadable forms to your experts and let them have a guess of their estimated effort for each work package. It may take multiple runs to solidify the data.</p>
+        <p class="text-muted">If the estimations seem not to differ much among each other, you can transfer it to <strong><em>#2</em></strong>.</p>
+        <%= link_to 'Download estimation forms (.pdf)', project_efforts_path(@project, :format => :pdf), :class => 'btn btn-default' %>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#step-2"><strong>#2</strong> Transfer inquiry results</a>
+      </h4>
+    </div>
+    <div id="step-2" class="panel-collapse collapse">
+      <div class="panel-body">
+        <% @project.work_packages.each do |work| %>
+          <div class="panel panel-default">
+            <div class="panel-heading"><strong><%= work.name %></strong></div>
+            <div class="panel-body">
+              <%= form_for :effort, :url => efforts_path, :html => { :class => 'form-inline create-estimation', :role => 'form'} do |f| %>
+                <%= f.hidden_field :work_id, :value => work.id %>
+                <%= f.hidden_field :method, :value => 0 %>
+                <div class="form-group">New Estimation: </div>
+                <div class="form-group">
+                  <%= f.label :name, :class => 'sr-only' %>
+                  <%= f.text_field :name, :placeholder => 'Name', :class => 'form-control' %>
+                </div>
+                <div class="form-group">
+                  <%= f.label :estimation, :class => 'sr-only' %>
+                  <%= f.text_field :estimation, :placeholder => 'Estimation', :class => 'form-control' %>
+                </div>
+                <%= f.submit 'Insert', :class => 'btn btn-default btn-sm' %>
+              <% end %>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th colspan="2">Estimation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% work.efforts.delphi.each do |effort| %>
+                  <tr>
+                    <td><%= effort.name %></td>
+                    <td><%= effort.estimation %></td>
+                    <td class="text-right"><%= link_to content_tag(:span, nil, :class => 'glyphicon glyphicon-trash'), effort_path(effort), :class => 'btn btn-default btn-xs delete-estimation' %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#step-3"><strong>#3</strong> View accumulated results</a>
+      </h4>
+    </div>
+    <div id="step-3" class="panel-collapse collapse">
+      <div class="panel-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $('#accordion').on('shown.bs.collapse', function(e) {
+    var step = e.target.id;
+    var step = parseInt(step.charAt(step.length - 1));
+    
+    var progress = step * 33.33;
+
+    $('#progressbar .progress-bar').attr('aria-valuenow', progress).css('width', progress + '%')
+  })
+
+  $('#accordion').on('show.bs.collapse', function(e) {
+    var step = e.target.id;
+    var step = parseInt(step.charAt(step.length - 1));
+
+    if (step == 3) {
+      $.ajax({
+        type : 'GET',
+        url : '<%= efforts_results_path(@project) %>',
+        dataType : 'html',
+        success : function(data) {
+          $('#step-3').find('.panel-body').html(data);
+        }
+      })
+    }
+  })
+
+  $(document).on('click', '.delete-estimation', function(e) {
+    e.preventDefault();
+
+    var row = $(this).closest('tr');
+
+    $.ajax({
+      type : 'DELETE',
+      url : $(this).attr('href'),
+      dataType: 'json',
+      success: function(data) {
+        row.hide(400, function() { row.remove() })
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  })
+
+  $('.create-estimation').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+
+    var clearForm = function() {
+      form.find('.form-control').val('');
+      form.find('[name="effort[name]"]').focus();
+    }
+    var tbody = $(this).parent().next().find('tbody');
+    
+    $.ajax({
+      type : $(this).attr('method'),
+      url : $(this).attr('action'),
+      dataType: 'json',
+      data : $(this).serialize(),
+      success: function(data) {
+        var row = '<tr style="display: none"><td>' + data.name + '</td><td>' + data.estimation.toFixed(1) + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-estimation" href="/efforts/' + data.id + '/delete" rel="nofollow"><span class="glyphicon glyphicon-trash"></span></a></td></tr>';
+        tbody.append(row);
+        tbody.children('tr:last').show(400);
+        clearForm();
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  })
+</script>

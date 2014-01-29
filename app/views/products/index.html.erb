@@ -1,3 +1,4 @@
+<%= render :partial => 'projects/navigation' %>
 <h1>Product Breakdown Structure</h1>
 <nav class="navbar navbar-default" role="navigation">
   <div class="collapse navbar-collapse">
@@ -7,15 +8,20 @@
       <button type="button" class="btn btn-sm navbar-btn" id="product-remove"><span class="glyphicon glyphicon-remove"></span> Remove</button>
     </div>
     <div class="navbar-right">
-      <button type="button" class="btn btn-sm navbar-btn" id="product-save"><span class="glyphicon glyphicon-save"></span> Save</button>
+      <%= form_for :product, :url => product_path, :html => { :class => 'navbar-form navbar-left pull-right', :style => 'display: none', :role => 'form', :id => 'new-product-form' } do |f| %>
+        <div class="form-group">
+          <%= f.text_field :name, :class => 'form-control', :placeholder => 'Enter node name' %>
+        </div>
+        <%= f.submit 'Insert', :class => 'btn btn-primary btn-sm' %>
+      <% end %>
     </div>
   </div>
 </nav>
 
-<div id="jstree_test"></div>
+<div id="jstree"></div>
 <script>
-  var tree = $('#jstree_test');
-  $('#jstree_test')
+  var tree = $('#jstree');
+  $('#jstree')
     .jstree({
       "core" : {
         "check_callback" : true,
@@ -27,14 +33,97 @@
         },
       },
       "types" : {
-        "#" : { "max_depth" : 3, "valid_children" : ["root"] },
-        0 : { "valid_children" : [1] },
-        1 : { "valid_children" : [2] },
-        2 : { "valid_children" : [3] },
-        3 : { "icon" : "glyphicon glyphicon-tasks", "max_children" : 0, "valid_children" : [] }
+        '#'  : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : [] },
+        'd0' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d1'] },
+        'd1' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d2'] },
+        'd2' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d3'] },
+        'd3' : { "icon" : "glyphicon glyphicon-tasks", "max_children" : 0, "valid_children" : [] }
       },
       "plugins" : [ "dnd", "types", "wholerow" ]
   }).bind('ready.jstree', function() {
     $(this).jstree('open_all').jstree('open_all').jstree('open_all');
+  }).bind('set_text.jstree', function(event, data) {
+    if (!!data.text) {
+      var product = {
+        'id' : data.obj.id,
+        'name' : data.obj.text
+      };
+      AjaxProduct('PUT', product, null);
+    }
+  }).bind('delete_node.jstree', function(event, data) {
+    var product = {
+      'id' : data.node.id
+    }
+    AjaxProduct('DELETE', product, null);
+  }).bind('move_node.jstree', function(event, data) {
+    var product = {
+      'id' : data.node.id,
+      'parent' : data.parent,
+      'position' : data.position + 1
+    }
+    AjaxProduct('PATCH', product, null);
   });
+
+  function AjaxProduct(action, product, callback) {
+    $.ajax({
+      type : action,
+      url : '<%= product_path %>',
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'product' : product },
+      success: function(data) { console.log(data) },/*callback,*/
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  }
+
+  $('#product-new').click(function() {
+    $('#product_name').val('');
+    $('#new-product-form').toggle('slide', function () { $('#product_name').focus() });
+  });
+
+  $('#product-rename').click(function() {
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if(!sel.length) { return false; }
+    sel = sel[0];
+    ref.edit(sel);
+  });
+
+  $('#product-remove').click(function() {
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if (!sel.length) { return false; }
+    ref.delete_node(sel);
+  });
+
+  $('#new-product-form').submit(function(e) {
+    e.preventDefault();
+    var val = $('#product_name').val();
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if (!sel.length || val.length == 0 ) { return false; }
+    sel = ref.get_node(sel[0]);
+
+    if (sel.type != 'd4' || sel.type == '#') {
+      var product = { 'name' : val, 'parent' : sel.id }
+
+      AjaxProduct('POST', product, function(data) {
+        ref.create_node(sel,
+          {
+            'id' : data.id,
+            'text' : data.name,
+            'type' : 'd' + data.depth
+          }
+        );
+        ref.open_node(sel);
+      })
+
+      $('#new-product-form').hide('slide');
+    }
+  })
+
 </script>

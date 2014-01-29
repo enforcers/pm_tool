@@ -1,0 +1,50 @@
+<html>
+<head>
+<%= wicked_pdf_stylesheet_link_tag "application" %>
+<style type="text/css">
+  div.pagebreak { page-break-after: always;}
+  div.block { display: table; margin: 2em 0;}
+  div.block div.c1 {
+    display: table-cell;
+    vertical-align: middle;
+    height: 3em;
+    width: 10em;
+  }
+  div.block div.c2 {
+    display: table-cell;
+    margin-left: 30%;
+    width: 40em;
+    height: 3em;
+    border: 2px solid #000;
+  }
+</style>
+</head>
+<body>
+<% @project.work_packages.each do |work| %>
+<h1>Effort Estimation</h1>
+<p><strong>Work package: </strong><%= work.name %></p>
+<hr/>
+<div style="margin-top:2em"></div>
+<div class="block">
+  <div class="c1">Your name:</div>
+  <div class="c2"></div>
+</div>
+<div class="block">
+  <div class="c1">Date:</div>
+  <div class="c2"></div>
+</div>
+<div class="block">
+  <div class="c1">Estimated effort:<br/> (person days)</div>
+  <div class="c2"></div>
+</div>
+<p><h2>Available resources</h2></p>
+<hr/>
+  <% work.resources.each do |resource| %>
+    <p><strong style="font-size: 1.3em"><%= resource.name %></strong><br/>
+    <strong>Qualification: </strong><%= resource.qualification %><br/>
+    <strong>Experience: </strong><%= resource.experience %></p>
+  <% end %>
+<div class="pagebreak"></div>
+<% end %>
+</body>
+</html>

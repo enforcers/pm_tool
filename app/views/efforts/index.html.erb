@@ -1,0 +1,35 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Effort Estimation
+  <small>
+    Method:
+    <form style="display:inline-block">
+      <%= select :project, :estimation_method, [['Delphi', 0],['Expectation', 1]], {}, :class => 'form-control' %>
+    </form>
+  </small>
+</h1>
+<!--
+<nav class="navbar navbar-default" role="navigation">
+  <div class="collapse navbar-collapse">
+    <form class="navbar-form navbar-left">
+      <div class="input-group">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-screenshot"></span> Estimation Method</span>
+        <%= select :project, :estimation_method, [['Delphi', 0],['Expectation', 1]], {}, :class => 'form-control' %>
+        <span class="input-group-btn">
+          <input class="btn btn-primary" type="submit" value="Change"/>
+        </span>
+      </div>
+    </form>
+  </div>
+</nav>
+-->
+<% if @project.estimation_method == 0 #delphi %>
+  <%= render :partial => 'delphi' %>
+<% else #expectation %>
+  <%= render :partial => 'expectation' %>
+<% end %>
+
+<script>
+  $('#project_estimation_method').change(function() {
+    $(this).parent().submit();
+  })
+</script>

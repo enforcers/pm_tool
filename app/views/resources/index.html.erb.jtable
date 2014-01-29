@@ -1,0 +1,43 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Resource Breakdown Structure</h1>
+<div id="internal_resources"></div>
+
+<script>
+$(document).ready(function() {
+	$('#internal_resources').jtable({
+		title: 'Internal Resources',
+		paging: false,
+		sorting: false,
+		actions: {
+			listAction: '<%= list_project_resources_path(@project) %>',
+			deleteAction: '/resouce/delete'
+		},
+		fields: {
+			id: {
+				key: true,
+				create: false,
+				edit: false,
+				list: false
+			},
+			name: {
+				title: 'Name',
+				width: '25%'
+			},
+			qualification: {
+				title: 'Qualification',
+				width: '25%'
+			},
+			experience: {
+				title: 'Experience',
+				width: '25%'
+			},
+			fte: {
+				title: 'FTE',
+				width: '25%'
+			}
+		}
+	}).jtable('load');
+
+	//$('#internal_resouces').jtable('load');
+})
+</script>

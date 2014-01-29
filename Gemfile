@@ -4,7 +4,14 @@ source 'https://rubygems.org'
 gem 'rails', '4.0.2'
 
 # Use sqlite3 as the database for Active Record
-gem 'sqlite3'
+group :production, :staging do
+  gem 'pg'
+  gem 'rails_12factor'
+end
+
+group :development, :test do
+  gem 'sqlite3'
+end
 
 # Use SCSS for stylesheets
 # gem 'sass-rails', '~> 4.0.0'
@@ -32,9 +39,16 @@ group :doc do
   gem 'sdoc', require: false
 end
 
+gem 'ancestry'
+
 gem 'less-rails'
+gem 'jquery-ui-rails'
 gem 'twitter-bootswatch-rails', '~> 3.0.2'
 gem 'twitter-bootswatch-rails-helpers'
+gem 'acts_as_list'
+
+gem 'wkhtmltopdf-binary'
+gem 'wicked_pdf'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.1.2'

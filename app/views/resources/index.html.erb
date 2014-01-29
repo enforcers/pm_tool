@@ -1,0 +1,452 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Resource Breakdown Structure</h1>
+<button type="button" id="toggle_internal_form" class="btn btn-default btn-block"><span class="glyphicon glyphicon-chevron-down pull-left"></span>Internal Resources<span class="glyphicon glyphicon-chevron-down pull-right"></span></button>
+<%= form_for :resource, :namespace => 'internal', :url => resource_path, :html => { :class => ' resource-form form-horizontal', :id => 'internal_form' } do |f| %>
+	<%= f.hidden_field :id %>
+	<%= f.hidden_field :group, :value => 0 %>
+	<div class="form-group">
+		<%= f.label :name, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :name, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :qualification, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :qualification, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :experience, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :experience, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :fte, 'Full-time equivalent', :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :fte, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-offset-4 col-sm-8">
+			<%= f.submit 'Create', :class => 'btn btn-primary', :id => 'submit_internal_resource_btn' %>
+			<%= f.submit 'Cancel', :type => 'reset', :class => 'btn btn-primary', :id => 'cancel_internal_resource_btn' %>
+		</div>
+	</div>
+<% end %>
+
+<table class="table table-hover table-draggable" id="internal_resources_table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Qualification</th>
+      <th>Experience</th>
+      <th>FTE</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+<% @project.resources.internal.each do |resource| %>
+    <tr data-resource="<%= resource.id %>">
+      <td><%= resource.name %></td>
+      <td><%= resource.qualification %></td>
+      <td><%= resource.experience %></td>
+      <td><%= resource.fte %></td>
+      <td class="text-right">
+      	<button type="button" class="btn btn-default btn-xs edit-resource"><span class="glyphicon glyphicon-pencil"></span></button>
+      	<button type="button" class="btn btn-default btn-xs delete-resource"><span class="glyphicon glyphicon-trash"></span></button>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+<button type="button" id="toggle_external_form" class="btn btn-default btn-block"><span class="glyphicon glyphicon-chevron-down pull-left"></span>External Resources<span class="glyphicon glyphicon-chevron-down pull-right"></span></button>
+<%= form_for :resource, :namespace => 'external', :url => resource_path, :html => { :class => ' resource-form form-horizontal', :id => 'external_form' } do |f| %>
+	<%= f.hidden_field :id %>
+	<%= f.hidden_field :group, :value => 0 %>
+	<div class="form-group">
+		<%= f.label :name, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :name, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :qualification, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :qualification, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :experience, :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :experience, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<%= f.label :fte, 'Full-time equivalent', :class => 'col-sm-4 control-label' %>
+		<div class="col-sm-8">
+			<%= f.text_field :fte, :class => 'form-control' %>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-offset-4 col-sm-8">
+			<%= f.submit 'Create', :class => 'btn btn-primary', :id => 'submit_external_resource_btn' %>
+			<%= f.submit 'Cancel', :type => 'reset', :class => 'btn btn-primary', :id => 'cancel_external_resource_btn' %>
+		</div>
+	</div>
+<% end %>
+<table class="table table-hover table-draggable" id="external_resources_table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Qualification</th>
+      <th>Experience</th>
+      <th>FTE</th>
+      <th>&nbsp;</th>
+    </tr>
+  </thead>
+  <tbody>
+<% @project.resources.external.each do |resource| %>
+    <tr data-resource="<%= resource.id %>">
+      <td><%= resource.name %></td>
+      <td><%= resource.qualification %></td>
+      <td><%= resource.experience %></td>
+      <td><%= resource.fte %></td>
+      <td class="text-right">
+      	<button type="button" class="btn btn-default btn-xs edit-resource"><span class="glyphicon glyphicon-pencil"></span></button>
+      	<button type="button" class="btn btn-default btn-xs delete-resource"><span class="glyphicon glyphicon-trash"></span></button>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<script>
+function MoveResource(resource) {
+    $.ajax({
+      type : 'PATCH',
+      url : $('#internal_form').attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+}
+
+$('#internal_resources_table tbody').sortable({
+	helper: function(e, ui) {
+		ui.children().each(function() {
+			$(this).width($(this).width());
+		});
+		return ui;
+	},
+	stop: function(e, ui) {
+		var resource = {
+			id : parseInt(ui.item.attr('data-resource')),
+			position : ui.item.index() + 1
+		}
+
+		MoveResource(resource);
+	}
+}).disableSelection();
+
+$('#external_resources_table tbody').sortable({
+	helper: function(e, ui) {
+		ui.children().each(function() {
+			$(this).width($(this).width());
+		});
+		return ui;
+	},
+	stop: function(e, ui) {
+		var resource = {
+			id : parseInt(ui.item.attr('data-resource')),
+			position : ui.item.index() + 1
+		}
+
+		MoveResource(resource);
+	}
+}).disableSelection();
+
+function ToggleInternalForm(bool) {
+	var form = $('#internal_form');
+	var button = $('#toggle_internal_form');
+	var callback = function() {
+		if (form.is(':visible')) {
+			button.children('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+		} else {
+			button.children('span').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+		}
+	};
+
+	if (bool == true) {
+		$('#submit_internal_resource_btn').val('Update');
+		form.slideDown(400, callback);
+	} else if (bool == false) {
+		$('#submit_internal_resource_btn').val('Update');
+		form.slideUp(400, callback);
+	} else {
+    if (form.is(':visible')) {
+      form[0].reset();
+    }
+		$('#submit_internal_resource_btn').val('Create');
+		form.slideToggle(400, callback);
+	}
+
+	$('#internal_resource_name').focus();
+}
+
+function ToggleExternalForm(bool) {
+	var form = $('#external_form');
+	var button = $('#toggle_external_form');
+	var callback = function() {
+		if (form.is(':visible')) {
+			button.children('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+		} else {
+			button.children('span').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+		}
+	};
+
+	if (bool == true) {
+		$('#submit_external_resource_btn').val('Update');
+		form.slideDown(400, callback);
+	} else if (bool == false) {
+		$('#submit_external_resource_btn').val('Update');
+		form.slideUp(400, callback);
+	} else {
+    if (form.is(':visible')) {
+      form[0].reset();
+    }
+		$('#submit_external_resource_btn').val('Create');
+		form.slideToggle(400, callback);
+	}
+
+	$('#external_resource_name').focus();
+}
+
+$('#cancel_internal_resource_btn').click(function() {
+	ToggleInternalForm(false);
+})
+
+$('#cancel_external_resource_btn').click(function() {
+	ToggleExternalForm(false);
+})
+
+$('#toggle_internal_form').click(function() {
+	ToggleInternalForm();
+})
+$('#toggle_external_form').click(function() {
+	ToggleExternalForm();
+})
+
+function SetInternalForm(resource) {
+	$('#internal_resource_id').val(resource.id);
+	$('#internal_resource_name').val(resource.name);
+	$('#internal_resource_qualification').val(resource.qualification);
+	$('#internal_resource_experience').val(resource.experience);
+	$('#internal_resource_fte').val(resource.fte);
+}
+
+function SetExternalForm(resource) {
+	$('#external_resource_id').val(resource.id);
+	$('#external_resource_name').val(resource.name);
+	$('#external_resource_qualification').val(resource.qualification);
+	$('#external_resource_experience').val(resource.experience);
+	$('#external_resource_fte').val(resource.fte);
+}
+
+function GetInternalForm() {
+	var resource = {
+		id : $('#internal_resource_id').val(),
+		group : 0,
+		name : $('#internal_resource_name').val(),
+		qualification : $('#internal_resource_qualification').val(),
+		experience : $('#internal_resource_experience').val(),
+		fte : $('#internal_resource_fte').val()
+	}
+
+	return resource;
+}
+
+function GetInternalForm() {
+	var resource = {
+		id : $('#external_resource_id').val(),
+		group : 1,
+		name : $('#external_resource_name').val(),
+		qualification : $('#external_resource_qualification').val(),
+		experience : $('#external_resource_experience').val(),
+		fte : $('#external_resource_fte').val()
+	}
+
+	return resource;
+}
+
+$('#internal_resources_table .edit-resource').click(function() {
+	var resource = {
+		id : $(this).parent().parent().attr('data-resource')
+	};
+
+    $.ajax({
+      type : 'GET',
+      url : $('#internal_form').attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	SetInternalForm(data);
+      	ToggleInternalForm(true);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+})
+
+$('#external_resources_table .edit-resource').click(function() {
+	var resource = {
+		id : $(this).parent().parent().attr('data-resource')
+	};
+
+    $.ajax({
+      type : 'GET',
+      url : $('#external_form').attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	SetExternalForm(data);
+      	ToggleExternalForm(true);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+})
+
+$('#internal_resources_table .delete-resource').click(function() {
+	var resource = {
+		id : $(this).parent().parent().attr('data-resource')
+	};
+
+    $.ajax({
+      type : 'DELETE',
+      url : $('#internal_form').attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	deleteRow(resource);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+	deleteRow(resource);
+})
+
+$('#external_resources_table .delete-resource').click(function() {
+	var resource = {
+		id : $(this).parent().parent().attr('data-resource')
+	};
+
+    $.ajax({
+      type : 'DELETE',
+      url : $('#external_form').attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	deleteRow(resource);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+	deleteRow(resource);
+})
+
+$('#internal_form').submit(function(e) {
+	e.preventDefault();
+	var resource = GetInternalForm();
+	var type = 'PUT';
+
+	if ( $('#submit_internal_resource_btn').val() == 'Create' ) {
+		resource.id = null;
+		type = 'POST'
+	}
+
+    $.ajax({
+      type : type,
+      url : $(this).attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	if (type == 'POST') {
+      		newRow(data);
+      	} else {
+      		updateRow(data);
+      	}
+      	ToggleInternalForm();
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+})
+
+$('#external_form').submit(function(e) {
+	e.preventDefault();
+	var resource = GetInternalForm();
+	var type = 'PUT';
+
+	if ( $('#submit_external_resource_btn').val() == 'Create' ) {
+		resource.id = null;
+		type = 'POST'
+	}
+
+    $.ajax({
+      type : type,
+      url : $(this).attr('action'),
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'resource' : resource },
+      success: function(data) {
+      	if (type == 'POST') {
+      		newRow(data);
+      	} else {
+      		updateRow(data);
+      	}
+      	ToggleExternalForm(false);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+})
+
+function updateRow(resource) {
+	var row = $('tr[data-resource=' + resource.id +']');
+	var tdName = row.children('td:nth-child(1)');
+	var tdQualification = row.children('td:nth-child(2)');
+	var tdExperience = row.children('td:nth-child(3)');
+	var tdFte = row.children('td:nth-child(4)');
+	
+	tdName.html(resource.name);
+	tdQualification.html(resource.qualification);
+	tdExperience.html(resource.experience);
+	tdFte.html(resource.fte.toFixed(1));
+}
+
+function newRow(resource) {
+	var row = '<tr style="display:none" data-resource="' + resource.id + '"><td>' + resource.name + '</td><td>' + resource.qualification + '</td><td>' + resource.experience + '</td><td>' + resource.fte.toFixed(1) + '</td><td class="text-right"><button type="button" class="btn btn-default btn-xs edit-resource"><span class="glyphicon glyphicon-pencil"></span></button><button type="button" class="btn btn-default btn-xs delete-resource"><span class="glyphicon glyphicon-trash"></span></button></td></tr>';
+
+	if (resource.group == 0) {
+		$('#internal_resources_table tbody').append(row);
+		$('#internal_resources_table tbody tr:last').show(400);
+	} else {
+		$('#external_resources_table tbody').append(row);
+		$('#external_resources_table tbody tr:last').show(400);
+	}
+}
+
+function deleteRow(resource) {
+	var row = $('tr[data-resource=' + resource.id +']');
+	row.hide(400, function() { row.remove() });
+}
+</script>

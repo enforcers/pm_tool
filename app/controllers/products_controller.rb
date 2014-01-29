@@ -1,80 +1,47 @@
 class ProductsController < ApplicationController
-  before_action :set_product, only: [:show, :edit, :update, :destroy]
+  before_action :set_product, only: [:update, :move, :destroy]
 
-  # GET /products
-  # GET /products.json
   def index
     @project = Project.find(params[:project_id])
     @products = @project.products
   end
 
-  # GET /products/1
-  # GET /products/1.json
-  def show
-  end
-
-  # GET /products/new
-  def new
-    @product = Product.new
-  end
-
-  # GET /products/1/edit
-  def edit
-  end
-
-  # POST /products
-  # POST /products.json
   def create
-    @product = Product.new(product_params)
-
-    respond_to do |format|
-      if @product.save
-        format.html { redirect_to @product, notice: 'Product was successfully created.' }
-        format.json { render action: 'show', status: :created, location: @product }
-      else
-        format.html { render action: 'new' }
-        format.json { render json: @product.errors, status: :unprocessable_entity }
-      end
-    end
+    @product = Product.create(:name => params[:product][:name], :parent_id => params[:product][:parent], :project_id => params[:project])
+    render :json => @product
   end
 
-  # PATCH/PUT /products/1
-  # PATCH/PUT /products/1.json
+  def move
+    #@product.remove_from_list
+    @product.parent_id = params[:product][:parent].to_f
+    @product.save
+    @product.insert_at(params[:product][:position].to_f)
+    @product.save
+
+    render :json => @product
+  end
+
   def update
-    respond_to do |format|
-      if @product.update(product_params)
-        format.html { redirect_to @product, notice: 'Product was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: 'edit' }
-        format.json { render json: @product.errors, status: :unprocessable_entity }
-      end
-    end
+    @product.name = params[:product][:name]
+    @product.save
+
+    render :json => @product
   end
 
-  # DELETE /products/1
-  # DELETE /products/1.json
   def destroy
     @product.destroy
-    respond_to do |format|
-      format.html { redirect_to products_url }
-      format.json { head :no_content }
-    end
+
+    render :json => @product
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_product
-      @product = Product.find(params[:id])
-      set_project
-    end
-
-    def set_project
-      @project = Project.find(params[:project_id])
+      @product = Product.find(params[:product][:id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def product_params
-      params.require(:product).permit(:name, :depth, :place, :project_id, :parent_id)
+      params.require(:product).permit(:name, :position, :project_id, :parent_id)
     end
 end

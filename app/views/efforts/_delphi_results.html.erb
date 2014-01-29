@@ -1,0 +1,16 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Work package</th>
+      <th>Estimated Effort (Person days)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @project.work_packages.each do |work| %>
+      <tr>
+        <td><%= work.name %></td>
+        <td><%= work.average_estimate(0) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

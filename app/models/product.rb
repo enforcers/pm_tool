@@ -1,20 +1,18 @@
 class Product < ActiveRecord::Base
-  default_scope order('place')
-  scope :top_level#, where(:depth => 0)
+  default_scope { order('position') }
+  scope :root, -> { where(parent_id: nil) }
 
   belongs_to :project
-  belongs_to :parent, :class_name => 'Product'
-  has_many :children, :foreign_key => 'parent_id', :class_name => 'Product'
+  has_ancestry :cache_depth => true
+  acts_as_list :scope => :parent
+  before_destroy :destroy_childs
 
-  def hierachy
-    hierachy = ''
+  def to_json(otions)
+    super(:only => [:id, :name, :parent_id, :position, :project_id], :methods => [:depth])
+  end
 
-    actual = self
-    while not actual.nil? do
-      hierachy = "#{actual.place}.#{hierachy}"
-      actual = actual.parent
-    end
-
-    return hierachy
+private
+  def destroy_childs
+    self.children.delete_all
   end
 end

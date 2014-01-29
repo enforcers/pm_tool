@@ -1,0 +1,57 @@
+<% @project.work_packages.each do |work| %>
+  <% pessimistic = work.expectation(1) %>
+  <% realistic = work.expectation(2) %>
+  <% optimistic = work.expectation(3) %>
+  <div class="panel panel-default work-panel">
+    <div class="panel-heading"><a data-toggle="collapse" data-target="#work-<%= work.id %>" href="#"><%= work.name %></a><span class="label label-primary pull-right"><%= number_to_human(work.average_estimate(1), units: {unit: 'PD'}) %></span></div>
+    <div class="panel-collapse collapse" id="work-<%= work.id %>">
+      <div class="panel-body">
+        <%= form_for :effort, :url => efforts_path, :method => :post, :html => { :class => 'form-inline update-estimation' } do |f| %>
+          <%= f.hidden_field :work_id, :value => work.id %>
+          <%= f.hidden_field :method, :value => 1 %>
+          <div class="form-group col-sm-3">
+            <div class="input-group">
+              <span class="input-group-addon">Pessimistic</span>
+              <%= f.text_field :pessimistic, :value => pessimistic.nil? ? '' : pessimistic.estimation, :class => 'form-control' %>
+            </div>
+          </div>
+          <div class="form-group col-sm-3">
+            <div class="input-group">
+              <span class="input-group-addon">Realistic</span>
+              <%= f.text_field :realistic, :value => realistic.nil? ? '' : realistic.estimation, :class => 'form-control' %>
+            </div>
+          </div>
+          <div class="form-group col-sm-3">
+            <div class="input-group">
+              <span class="input-group-addon">Optimistic</span>
+              <%= f.text_field :optimistic, :value => optimistic.nil? ? '' : optimistic.estimation, :class => 'form-control' %>
+            </div>
+          </div>
+          <%= f.submit 'Update', :class => 'btn btn-sm btn-primary' %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  $('.work-panel').collapse();
+
+  $('.update-estimation').submit(function(e) {
+    e.preventDefault();
+    var form = $(this);
+
+    $.ajax({
+      type : form.attr('method'),
+      url : form.attr('action'),
+      dataType: 'text',
+      data : form.serialize(),
+      success: function(data) {
+        form.closest('.work-panel').find('.panel-heading span.label').html(data);
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  })
+</script>

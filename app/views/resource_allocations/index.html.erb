@@ -1,0 +1,87 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Resource Allocation Matrix</h1>
+<table class="table resource-allocation-table">
+  <thead>
+    <tr>
+      <th colspan="2" class="work">Work package</th>
+      <th colspan="2" class="resources">Resources</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="depth-0">
+      <td colspan="4"><%= @root_node.name %></td>
+    </tr>
+<% @root_node.children.each do |d1| %>
+    <tr class="depth-1">
+      <td colspan="4"><%= d1.name %></td>
+    </tr>
+  <% d1.children.each do |d2| %>
+    <tr class="depth-2">
+      <td colspan="4"><%= d2.name %></td>
+    </tr>
+    <% d2.children.each do |d3| %>
+    <tr class="depth-3 active">
+      <td colspan="2" class="work"><%= d3.name %></td>
+      <td class="resources"><%= d3.resources.map(&:name).join(", ") %></td>
+      <td class="text-right"><button class="edit-resources" type="button" data-work="<%= d3.id %>"><span class="glyphicon glyphicon-pencil"></span></button></td>
+    </tr>
+    <% end %>
+  <% end %>
+<% end %>
+  </tbody>
+</table>
+
+<script>
+  var destroyAllPopovers = function() {
+    $('.edit-resources').popover('destroy');
+  };
+
+  $('.edit-resources').click(function(e) {
+    var _this = $(this);
+    if (typeof _this.data('bs.popover') != 'undefined') {
+      _this.popover('destroy');
+      return;
+    }
+    destroyAllPopovers();
+
+    $.ajax({
+      type : 'GET',
+      url : '<%= resource_allocations_select_path %>',
+      dataType: 'html',
+      data : { 'project' : <%= @project.id %>, 'work' : $(this).attr('data-work') },
+      success: function(data) {
+        _this
+          .popover({
+            html: true,
+            placement: 'left',
+            trigger: 'manual',
+            content: data
+          })
+          .popover('show');
+
+        $('.popover-content .resource-allocation-select').chosen();
+        $('.update-resource-allocation').submit(function(e) {
+          e.preventDefault();
+          var form = $(this);
+
+          $.ajax({
+            type : form.attr('method'),
+            url : form.attr('action'),
+            dataType: 'text',
+            data: form.serialize(),
+            success: function(data) {
+              _this.parent().parent().children('.resources').html(data);
+              _this.popover('destroy');
+            },
+            error: function(xhRequest, ErrorText, thrownError) {
+              console.log(xhRequest.responseText);
+            }
+          })
+        })
+      },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  })
+</script>

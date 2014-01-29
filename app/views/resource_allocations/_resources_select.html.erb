@@ -1,0 +1,17 @@
+<%= form_for :resource_allocation, :url => resource_allocations_path, :html => { :class => 'update-resource-allocation' }, :method => :post do |f| %>
+  <input type="hidden" name="project" value="<%= @project.id %>" />
+  <input type="hidden" name="work" value="<%= @work.id %>" />
+  <div class="input-group">
+    <select name="allocated[]" multiple class="form-control chosen-select resource-allocation-select" data-placeholder="Allocate resources...">
+      <optgroup label="Internal">
+        <%= options_from_collection_for_select @resources.internal, 'id', 'name', @selected_resources %>
+      </optgroup>
+      <optgroup label="External">
+        <%= options_from_collection_for_select @resources.external, 'id', 'name', @selected_resources %>
+      </optgroup>
+    </select>
+    <span class="input-group-btn">
+      <%= f.button content_tag(:span, nil, :class => 'glyphicon glyphicon-save') + ' Save', :class => 'btn btn-primary', :type => 'submit', :style => 'height: 42px' %>
+    </span>
+  </div>
+<% end %>

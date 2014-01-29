@@ -4,5 +4,9 @@
  *= require yeti/loader
  *= require yeti/bootswatch
  *= require custom
- *= require jstree/themes/default/style.min
+ *= require jstree
+ *= require chosen
+ *= require chosen.bootstrap
+ *= require bootstrap-switch
+ *= require datepicker3
 */

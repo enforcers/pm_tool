@@ -1,0 +1,182 @@
+<%= render :partial => 'projects/navigation' %>
+<h1>Work Breakdown Structure</h1>
+<nav class="navbar navbar-default" role="navigation">
+  <div class="collapse navbar-collapse">
+    <div class="navbar-left">
+      <button type="button" class="btn btn-sm navbar-btn" id="work-new"><span class="glyphicon glyphicon-plus"></span> New</button>
+      <button type="button" class="btn btn-sm navbar-btn" id="work-rename"><span class="glyphicon glyphicon-pencil"></span> Rename</button>
+      <button type="button" class="btn btn-sm navbar-btn" id="work-remove"><span class="glyphicon glyphicon-remove"></span> Remove</button>
+    </div>
+    <div class="btn btn-xs col-xs-3">
+      <div class="input-group">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-share"></span></span>
+        <%= select 'work', 'output_id', @project.products.collect {|p| [ p.name, p.id ] }, {include_blank: 'None'}, :class => 'form-control', :disabled => 'disabled', :'data-toggle' => 'tooltip', :'data-placement' => 'top', :'data-original-title' => 'Output of selected node' %>
+      </div>
+    </div>
+    <div class="navbar-right">
+      <%= form_for :work, :url => work_path, :html => { :class => 'navbar-form navbar-left pull-right', :style => 'display: none', :role => 'form', :id => 'new-work-form' } do |f| %>
+        <div class="form-group">
+          <%= f.text_field :name, :class => 'form-control', :placeholder => 'Enter node name' %>
+        </div>
+        <%= f.submit 'Insert', :class => 'btn btn-primary btn-sm' %>
+      <% end %>
+    </div>
+  </div>
+</nav>
+
+<div id="jstree"></div>
+<script>
+  $('#jstree').jstree({
+      "core" : {
+        "check_callback" : true,
+        "data" : {
+          "url" : "<%= project_works_path(@project, :format => :json) %>",
+          "data" : function(node) {
+            return { 'id' : node.id, 'text' : 'test' };
+          }
+        },
+      },
+      "types" : {
+        '#'  : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : [] },
+        'd0' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d1'] },
+        'd1' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d2'] },
+        'd2' : { "icon" : "glyphicon glyphicon-folder-open", "valid_children" : ['d3'] },
+        'd3' : { "icon" : "glyphicon glyphicon-tasks", "max_children" : 0, "valid_children" : [] }
+      },
+      "plugins" : [ "dnd", "types", "wholerow" ]
+  }).bind('ready.jstree', function() {
+    $(this).jstree('open_all').jstree('open_all').jstree('open_all');
+  }).bind('set_text.jstree', function(event, data) {
+    if (!!data.text) {
+      var work = {
+        'id' : data.obj.id,
+        'name' : data.obj.text
+      };
+      AjaxWork('PUT', work, null);
+    }
+  }).bind('delete_node.jstree', function(event, data) {
+    var work = {
+      'id' : data.node.id
+    }
+    AjaxWork('DELETE', work, null);
+  }).bind('move_node.jstree', function(event, data) {
+    var work = {
+      'id' : data.node.id,
+      'parent' : data.parent,
+      'position' : data.position + 1
+    }
+    AjaxWork('PATCH', work, null);
+  }).bind('select_node.jstree', function(event, data) {
+    if (data.node.type == 'd3') {
+      var work = {
+        'id' : data.node.id
+      }
+
+      $.ajax({
+        type : 'GET',
+        url : '<%= work_output_path %>',
+        dataType: 'json',
+        data : { 'project' : <%= @project.id %>, 'work' : work },
+        success: function(data) {
+          $('#work_output_id').val(data).removeAttr('disabled');
+        },
+        error: function(xhRequest, ErrorText, thrownError) {
+          console.log(xhRequest.responseText);
+        }
+      });
+    } else {
+      $('#work_output_id').val('').attr('disabled', 'disabled');
+    }
+  });
+
+  $('#work_output_id').tooltip();
+
+  $('#work_output_id').change(function() {
+    // TODO: Ajax update
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if(!sel.length) { return false; }
+    sel = ref.get_node(sel[0]);
+
+    var work = {
+      'id' : sel.id,
+      'name' : sel.text,
+      'parent' : sel.parent,
+      'output' : this.value
+    }
+
+    $.ajax({
+      type : 'PUT',
+      url : '<%= work_path %>',
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'work' : work },
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  })
+
+  function AjaxWork(action, work, callback) {
+    $.ajax({
+      type : action,
+      url : '<%= work_path %>',
+      dataType: 'json',
+      data : { 'project' : <%= @project.id %>, 'work' : work },
+      success: callback,
+      error: function(xhRequest, ErrorText, thrownError) {
+        console.log(xhRequest.responseText);
+      }
+    });
+  }
+
+  $('#work-new').click(function() {
+    $('#work_name').val('');
+    $('#new-work-form').toggle('slide', function () { $('#work_name').focus() });
+  });
+
+  $('#work-rename').click(function() {
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if(!sel.length) { return false; }
+    sel = sel[0];
+    ref.edit(sel);
+  });
+
+  $('#work-remove').click(function() {
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if (!sel.length) { return false; }
+    ref.delete_node(sel);
+  });
+
+  $('#new-work-form').submit(function(e) {
+    e.preventDefault();
+    var val = $('#work_name').val();
+    var ref = $('#jstree').jstree(true),
+        sel = ref.get_selected();
+
+    if (!sel.length || val.length == 0 ) { return false; }
+    sel = ref.get_node(sel[0]);
+
+    if (sel.type != 'd4' || sel.type == '#') {
+      var work = { 'name' : val, 'parent' : sel.id }
+
+      AjaxWork('POST', work, function(data) {
+        ref.create_node(sel,
+          {
+            'id' : data.id,
+            'text' : data.name,
+            'type' : 'd' + data.depth
+          }
+        );
+        ref.open_node(sel);
+      })
+
+      $('#new-work-form').hide('slide');
+    }
+  })
+
+</script>
