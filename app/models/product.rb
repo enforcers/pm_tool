@@ -4,7 +4,7 @@ class Product < ActiveRecord::Base
 
   belongs_to :project
   has_ancestry :cache_depth => true
-  acts_as_list :scope => :parent
+  acts_as_list :scope => 'ancestry = \'#{ancestry}\''
   before_destroy :destroy_childs
 
   def to_json(otions)

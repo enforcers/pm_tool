@@ -269,7 +269,7 @@ function GetInternalForm() {
 	return resource;
 }
 
-function GetInternalForm() {
+function GetExternalForm() {
 	var resource = {
 		id : $('#external_resource_id').val(),
 		group : 1,
@@ -362,62 +362,78 @@ $('#external_resources_table .delete-resource').click(function() {
 	deleteRow(resource);
 })
 
-$('#internal_form').submit(function(e) {
-	e.preventDefault();
-	var resource = GetInternalForm();
-	var type = 'PUT';
+$('#internal_form').on('submit', function(e) { e.preventDefault() }).validate({
+  rules: {
+    'resource[name]': 'required',
+    'resource[fte]': {
+      required: true,
+      number: true
+    }
+  },
+  submitHandler: function(form) {
+    var resource = GetInternalForm();
+    var type = 'PUT';
 
-	if ( $('#submit_internal_resource_btn').val() == 'Create' ) {
-		resource.id = null;
-		type = 'POST'
-	}
+    if ( $('#submit_internal_resource_btn').val() == 'Create' ) {
+      resource.id = null;
+      type = 'POST'
+    }
 
     $.ajax({
       type : type,
-      url : $(this).attr('action'),
+      url : $(form).attr('action'),
       dataType: 'json',
       data : { 'project' : <%= @project.id %>, 'resource' : resource },
       success: function(data) {
-      	if (type == 'POST') {
-      		newRow(data);
-      	} else {
-      		updateRow(data);
-      	}
-      	ToggleInternalForm();
+        if (type == 'POST') {
+          newRow(data);
+        } else {
+          updateRow(data);
+        }
+        ToggleInternalForm();
       },
       error: function(xhRequest, ErrorText, thrownError) {
         console.log(xhRequest.responseText);
       }
     });
+  }
 })
 
-$('#external_form').submit(function(e) {
-	e.preventDefault();
-	var resource = GetInternalForm();
-	var type = 'PUT';
+$('#external_form').on('submit', function(e) { e.preventDefault() }).validate({
+  rules: {
+    'resource[name]': 'required',
+    'resource[fte]': {
+      required: true,
+      number: true
+    }
+  },
+  submitHandler: function(form) {
+    var resource = GetExternalForm();
+    var type = 'PUT';
 
-	if ( $('#submit_external_resource_btn').val() == 'Create' ) {
-		resource.id = null;
-		type = 'POST'
-	}
+    if ( $('#submit_external_resource_btn').val() == 'Create' ) {
+      resource.id = null;
+      type = 'POST'
+    }
 
     $.ajax({
       type : type,
-      url : $(this).attr('action'),
+      url : $(form).attr('action'),
       dataType: 'json',
       data : { 'project' : <%= @project.id %>, 'resource' : resource },
       success: function(data) {
-      	if (type == 'POST') {
-      		newRow(data);
-      	} else {
-      		updateRow(data);
-      	}
-      	ToggleExternalForm(false);
+        if (type == 'POST') {
+          newRow(data);
+        } else {
+          updateRow(data);
+        }
+        ToggleExternalForm(false);
       },
       error: function(xhRequest, ErrorText, thrownError) {
         console.log(xhRequest.responseText);
       }
     });
+  }
 })
 
 function updateRow(resource) {

@@ -70,7 +70,7 @@
       url : '<%= product_path %>',
       dataType: 'json',
       data : { 'project' : <%= @project.id %>, 'product' : product },
-      success: function(data) { console.log(data) },/*callback,*/
+      success: callback,
       error: function(xhRequest, ErrorText, thrownError) {
         console.log(xhRequest.responseText);
       }
@@ -99,31 +99,41 @@
     ref.delete_node(sel);
   });
 
-  $('#new-product-form').submit(function(e) {
-    e.preventDefault();
-    var val = $('#product_name').val();
-    var ref = $('#jstree').jstree(true),
-        sel = ref.get_selected();
+  $('#new-product-form').validate({
+    rules: {
+      'product[name]': {
+        required : true,
+        validParentNodeSelected : true
+      }
+    },
+    messages: {
+      'product[name]': {
+        validParentNodeSelected : 'Please select a valid parent node.'
+      }
+    },
+    submitHandler: function(form) {
+      var val = $('#product_name').val();
+      var ref = $('#jstree').jstree(true),
+          sel = ref.get_selected();
 
-    if (!sel.length || val.length == 0 ) { return false; }
-    sel = ref.get_node(sel[0]);
+      sel = ref.get_node(sel[0]);
 
-    if (sel.type != 'd4' || sel.type == '#') {
-      var product = { 'name' : val, 'parent' : sel.id }
+      if (sel.type != 'd3' || sel.type == '#') {
+        var product = { 'name' : val, 'parent' : sel.id }
 
-      AjaxProduct('POST', product, function(data) {
-        ref.create_node(sel,
-          {
-            'id' : data.id,
-            'text' : data.name,
-            'type' : 'd' + data.depth
-          }
-        );
-        ref.open_node(sel);
-      })
+        AjaxProduct('POST', product, function(data) {
+          ref.create_node(sel,
+            {
+              'id' : data.id,
+              'text' : data.name,
+              'type' : 'd' + data.depth
+            }
+          );
+          ref.open_node(sel);
+        })
 
-      $('#new-product-form').hide('slide');
+        $('#new-product-form').hide('slide');
+      }
     }
   })
-
 </script>

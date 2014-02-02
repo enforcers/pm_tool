@@ -12,7 +12,7 @@ class WorksController < ApplicationController
   end
 
   def move
-    #@work.remove_from_list
+    @work.remove_from_list
     @work.parent_id = params[:work][:parent].to_f
     @work.save
     @work.insert_at(params[:work][:position].to_f)

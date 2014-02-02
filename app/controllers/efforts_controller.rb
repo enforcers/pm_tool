@@ -18,7 +18,7 @@ class EffortsController < ApplicationController
   def create
     effort = params[:effort]
 
-    if (effort[:method] == 0) #delphi
+    if (effort[:method].to_f == 0) #delphi
       @effort = Effort.create(
         :work_id => effort[:work_id].to_f,
         :method => effort[:method].to_f,

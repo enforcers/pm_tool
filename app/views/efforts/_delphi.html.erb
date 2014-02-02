@@ -122,30 +122,38 @@
     });
   })
 
-  $('.create-estimation').submit(function(e) {
-    e.preventDefault();
-    var form = $(this);
-
-    var clearForm = function() {
-      form.find('.form-control').val('');
-      form.find('[name="effort[name]"]').focus();
-    }
-    var tbody = $(this).parent().next().find('tbody');
-    
-    $.ajax({
-      type : $(this).attr('method'),
-      url : $(this).attr('action'),
-      dataType: 'json',
-      data : $(this).serialize(),
-      success: function(data) {
-        var row = '<tr style="display: none"><td>' + data.name + '</td><td>' + data.estimation.toFixed(1) + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-estimation" href="/efforts/' + data.id + '/delete" rel="nofollow"><span class="glyphicon glyphicon-trash"></span></a></td></tr>';
-        tbody.append(row);
-        tbody.children('tr:last').show(400);
-        clearForm();
+  $('.create-estimation').each(function() {
+    $(this).on('submit', function(e) { e.preventDefault() }).validate({
+      rules: {
+        'effort[name]': 'required',
+        'effort[estimation]' : {
+          required: true,
+          number: true
+        }
       },
-      error: function(xhRequest, ErrorText, thrownError) {
-        console.log(xhRequest.responseText);
+      submitHandler: function(form) {
+        var clearForm = function() {
+          $(form).find('.form-control').val('');
+          $(form).find('[name="effort[name]"]').focus();
+        }
+        var tbody = $(form).parent().next().find('tbody');
+        
+        $.ajax({
+          type : $(form).attr('method'),
+          url : $(form).attr('action'),
+          dataType: 'json',
+          data : $(form).serialize(),
+          success: function(data) {
+            var row = '<tr style="display: none"><td>' + data.name + '</td><td>' + data.estimation.toFixed(1) + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-estimation" href="/efforts/' + data.id + '/delete" rel="nofollow"><span class="glyphicon glyphicon-trash"></span></a></td></tr>';
+            tbody.append(row);
+            tbody.children('tr:last').show(400);
+            clearForm();
+          },
+          error: function(xhRequest, ErrorText, thrownError) {
+            console.log(xhRequest.responseText);
+          }
+        });
       }
-    });
+    })
   })
 </script>

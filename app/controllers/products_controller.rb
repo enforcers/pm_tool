@@ -12,7 +12,7 @@ class ProductsController < ApplicationController
   end
 
   def move
-    #@product.remove_from_list
+    @product.remove_from_list
     @product.parent_id = params[:product][:parent].to_f
     @product.save
     @product.insert_at(params[:product][:position].to_f)

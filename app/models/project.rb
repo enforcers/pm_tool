@@ -7,7 +7,7 @@ class Project < ActiveRecord::Base
 	#after_destroy :cleanup
 
   def work_packages
-    return self.works.at_depth(3)
+    return self.works.at_depth(3).order(:created_at)
   end
 private
 	def init

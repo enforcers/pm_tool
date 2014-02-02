@@ -8,7 +8,7 @@ class Work < ActiveRecord::Base
   has_many :resources, :through => :resource_allocations
   accepts_nested_attributes_for :resource_allocations
   has_many :efforts, :dependent => :destroy
-  acts_as_list :scope => :parent
+  acts_as_list :scope => 'ancestry = \'#{ancestry}\''
   before_destroy :destroy_childs
 
   def to_json(otions)

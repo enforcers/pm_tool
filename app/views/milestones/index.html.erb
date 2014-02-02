@@ -98,33 +98,45 @@
     });
   }
 
-  $('#new-milestone-form').submit(function(e) {
-    e.preventDefault();
-    var form = $(this);
-    var tbody = $(this).parent().next().find('tbody');
+  $('#new-milestone-form').on('submit', function(e) { e.preventDefault() }).validate({
+    rules: {
+      'milestone[name]': 'required',
+      'milestone[start_at]': 'required'
+    },
+    unhighlight: function(element) {
+      $(element).tooltip('hide').tooltip('disable');
+      $(element).closest('.form-group').removeClass('has-error');
+    },
+    errorPlacement: function(error,element) {
+      $(element).tooltip({ title: error.text() }).tooltip('enable').tooltip('show');
+    },
+    submitHandler: function(form) {
+      form = $(form);
+      var tbody = form.parent().next().find('tbody');
 
-    var clearForm = function() {
-      form.find('.form-control').val('');
-      form.find('[name="milestone[name]"]').focus();
-    }
-
-    $.ajax({
-      type : form.attr('method'),
-      url : form.attr('action'),
-      dataType: 'json',
-      data : form.serialize(),
-      success : function(data) {
-        initTimeline();
-        var date_range = data.start_at;
-        if (data.end_at != null) {
-          date_range = date_range + ' to ' + data.end_at;
-        }
-        var row = '<tr><td>' + data.name + '<p class="text-muted">' + date_range + '</p></td><td>' + data.description + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-milestone" href="/milestone/' + data.id + '/delete"><span class="glyphicon glyphicon-trash"</span></a></td></tr>';
-        tbody.append(row);
-        tbody.children('tr:last').show(400);
-        clearForm();
+      var clearForm = function() {
+        form.find('.form-control').val('');
+        form.find('[name="milestone[name]"]').focus();
       }
-    })
+
+      $.ajax({
+        type : form.attr('method'),
+        url : form.attr('action'),
+        dataType: 'json',
+        data : form.serialize(),
+        success : function(data) {
+          initTimeline();
+          var date_range = data.start_at;
+          if (data.end_at != null) {
+            date_range = date_range + ' to ' + data.end_at;
+          }
+          var row = '<tr><td>' + data.name + '<p class="text-muted">' + date_range + '</p></td><td>' + data.description + '</td><td class="text-right"><a class="btn btn-default btn-xs delete-milestone" href="/milestone/' + data.id + '/delete"><span class="glyphicon glyphicon-trash"</span></a></td></tr>';
+          tbody.append(row);
+          tbody.children('tr:last').show(400);
+          clearForm();
+        }
+      })
+    }
   })
 
   $(document).on('click', '.delete-milestone', function(e) {

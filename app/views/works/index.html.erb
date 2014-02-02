@@ -10,7 +10,7 @@
     <div class="btn btn-xs col-xs-3">
       <div class="input-group">
         <span class="input-group-addon"><span class="glyphicon glyphicon-share"></span></span>
-        <%= select 'work', 'output_id', @project.products.collect {|p| [ p.name, p.id ] }, {include_blank: 'None'}, :class => 'form-control', :disabled => 'disabled', :'data-toggle' => 'tooltip', :'data-placement' => 'top', :'data-original-title' => 'Output of selected node' %>
+        <%= select 'work', 'output_id', @project.products.at_depth(3).collect {|p| [ p.name, p.id ] }, {include_blank: 'None'}, :class => 'form-control', :disabled => 'disabled', :'data-toggle' => 'tooltip', :'data-placement' => 'top', :'data-original-title' => 'Output of selected node' %>
       </div>
     </div>
     <div class="navbar-right">
@@ -152,16 +152,26 @@
     ref.delete_node(sel);
   });
 
-  $('#new-work-form').submit(function(e) {
-    e.preventDefault();
+  $('#new-work-form').validate({
+    rules: {
+      'work[name]': {
+        required : true,
+        validParentNodeSelected : true
+      }
+    },
+    messages: {
+      'work[name]': {
+        validParentNodeSelected : 'Please select a valid parent node.'
+      }
+    },
+    submitHandler: function(form) {
     var val = $('#work_name').val();
     var ref = $('#jstree').jstree(true),
         sel = ref.get_selected();
 
-    if (!sel.length || val.length == 0 ) { return false; }
     sel = ref.get_node(sel[0]);
 
-    if (sel.type != 'd4' || sel.type == '#') {
+    if (sel.type != 'd3' || sel.type == '#') {
       var work = { 'name' : val, 'parent' : sel.id }
 
       AjaxWork('POST', work, function(data) {
@@ -176,6 +186,7 @@
       })
 
       $('#new-work-form').hide('slide');
+    }
     }
   })
 
